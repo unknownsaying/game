@@ -1,0 +1,22 @@
+If … Then … ElseIf … Else … End If
+Select Case … Case … Case Else … End Select
+For … To … Step … Next
+For Each … In … Next
+Do While/Until … Loop
+Do … Loop While/Until
+While … End While
+Try … Catch … Finally … End Try
+Using … End Using
+SyncLock … End SyncLock
+With … End With
+Namespace … End Namespace
+Class … End Class
+Structure … End Structure
+Module … End Module
+Interface … End Interface
+Enum … End Enum
+Sub … End Sub
+Function … End Function
+Property … Get … Set … End Property
+Operator … End Operator
+AddHandler … RemoveHandler … (not blocks but paired)

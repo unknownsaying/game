@@ -1,0 +1,69 @@
+Declaration and type keywords
+Dim Const Enum Class Structure Interface Module Delegate Event Sub Function Property Operator Declare Namespace
+
+Access modifiers
+Public Private Protected Friend Protected Friend Private Protected
+
+Inheritance / modification
+Inherits Implements MustInherit NotInheritable MustOverride Overridable NotOverridable Overrides Overloads Shadows Shared
+
+Other declaration modifiers
+Partial ReadOnly WriteOnly Default WithEvents Static Narrowing Widening Async Iterator
+
+Data type keywords (reserved)
+Boolean Byte SByte Short UShort Integer UInteger Long ULong Single Double Decimal Date Char String Object
+
+Type-suffix forms (obsolete but reserved)
+Variant Let (no longer functional)
+
+Literals and constants
+True False Nothing
+
+Object and member access
+Me MyBase MyClass New
+
+Control flow
+If Then Else ElseIf End If
+Select Case End Select
+For To Step Each In Next
+Do Loop While Until
+While End While (separate construct)
+Exit Continue GoTo Return Stop End
+
+Exception handling
+Try Catch Finally End Try
+Throw When (exception filter)
+
+Resource management
+Using End Using
+SyncLock End SyncLock
+
+Operators (reserved)
+And Or Xor Not AndAlso OrElse
+Is IsNot Like Mod
+AddressOf GetType TypeOf…Is DirectCast TryCast CType
+GetXmlNamespace
+
+Conversion functions (reserved – but used like keywords)
+CBool CByte CChar CDate CDbl CDec CInt CLng CObj CSByte CShort CSng CStr CUInt CULng CUShort
+
+Parameter modifiers
+ByVal ByRef Optional ParamArray Out (only in COM interop Declare)
+
+Arrays and collections
+Erase ReDim Preserve To (in array bounds)
+
+Handles / WithEvents
+Handles RaiseEvent
+
+LINQ contextual keywords
+From Where Select (clause) Group By Into Join On Equals Let (query) Order By Ascending Descending Skip Take Skip While Take While Distinct Aggregate Group Join
+
+XML contextual keywords
+<…> (XML literals), <!-- … -->, <%= … %>, GetXmlNamespace, axis properties (.@, ...<, etc.)
+
+Other contextual keywords
+Async Await Yield Iterator Custom Off Compare Binary Text Ansi Unicode Auto Assembly Strict Explicit Mid Key Widening Narrowing Partial (also reserved) ExternalSource End ExternalSource Region End Region
+
+Obsolete but reserved
+Wend Let Variant GoSub Return (in old style), REM

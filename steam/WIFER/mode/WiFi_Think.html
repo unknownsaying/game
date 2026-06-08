@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>ASK · FSK · PSK | Arbitrary WiFi Router – Interactive 3D</title>
+  <!-- SCSS compiled to CSS (embedded) -->
+  <style>
+    /* SCSS variables and mixins compiled to plain CSS */
+    :root {
+      --bg-dark: #0a0f1a;
+      --accent-ask: #ffaa00;
+      --accent-fsk: #3acfcf;
+      --accent-psk: #d96ef0;
+      --terminal-bg: rgba(5, 12, 22, 0.92);
+      --terminal-text: #b3f0ff;
+      --terminal-glow: 0 0 12px rgba(0, 200, 255, 0.4);
+      font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg-dark);
+      overflow: hidden;
+    }
+
+    /* Info header */
+    #info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #e0f0ff;
+      background: rgba(10, 20, 35, 0.8);
+      backdrop-filter: blur(12px);
+      padding: 18px 25px;
+      border-radius: 18px;
+      border: 1px solid rgba(100, 180, 255, 0.3);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      pointer-events: none;
+      z-index: 10;
+    }
+    #info h1 {
+      margin: 0 0 5px;
+      font-weight: 500;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      color: #7ab7ff;
+    }
+    #info h1 span {
+      font-weight: 300;
+      color: #b0d4ff;
+    }
+    #info p {
+      margin: 0;
+      font-size: 0.9rem;
+      opacity: 0.8;
+      letter-spacing: 0.5px;
+    }
+
+    /* Legend panel */
+    .legend-panel {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      background: rgba(10, 18, 30, 0.8);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 20px 25px;
+      border: 1px solid rgba(70, 130, 200, 0.35);
+      color: #cddcec;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      pointer-events: auto;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s;
+    }
+    .legend-item:hover {
+      transform: scale(1.07);
+      filter: brightness(1.2);
+    }
+    .legend-item:active {
+      transform: scale(0.96);
+    }
+    .color-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      box-shadow: 0 0 20px currentColor;
+    }
+    .legend-text {
+      font-weight: 500;
+      letter-spacing: 0.8px;
+      font-size: 1rem;
+    }
+    .legend-text small {
+      display: block;
+      font-weight: 300;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    /* Router badge */
+    .router-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 20, 40, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid #2f5170;
+      border-radius: 40px;
+      padding: 12px 28px;
+      color: #aad0ff;
+      font-weight: 500;
+      letter-spacing: 1px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+      box-shadow: 0 5px 20px rgba(0, 160, 255, 0.2);
+    }
+
+    /* Interactive Terminal */
+    .thought-terminal {
+      position: absolute;
+      bottom: 120px;
+      right: 30px;
+      width: 340px;
+      max-height: 200px;
+      background: var(--terminal-bg);
+      backdrop-filter: blur(18px);
+      border-radius: 18px;
+      border: 1px solid rgba(80, 180, 255, 0.4);
+      box-shadow: var(--terminal-glow), 0 8px 28px rgba(0, 0, 0, 0.8);
+      padding: 22px 20px;
+      color: var(--terminal-text);
+      font-family: 'Fira Code', 'Courier New', monospace;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    .thought-terminal:hover {
+      box-shadow: 0 0 28px rgba(0, 210, 255, 0.7);
+    }
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      font-size: 0.85rem;
+      color: #7cb9ff;
+    }
+    .terminal-output {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      min-height: 60px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: #00e5ff;
+      margin-left: 4px;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .terminal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .terminal-btn {
+      background: rgba(20, 50, 80, 0.7);
+      border: 1px solid rgba(90, 180, 255, 0.5);
+      color: #c0e1ff;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      backdrop-filter: blur(5px);
+    }
+    .terminal-btn:hover {
+      background: rgba(40, 90, 150, 0.8);
+      box-shadow: 0 0 18px rgba(0, 160, 255, 0.6);
+    }
+    .terminal-btn:active {
+      transform: scale(0.94);
+    }
+
+    @media (max-width: 700px) {
+      .thought-terminal {
+        width: 260px;
+        bottom: 20px;
+        right: 20px;
+        max-height: 170px;
+      }
+      .legend-panel {
+        flex-direction: column;
+        gap: 15px;
+        bottom: 20px;
+        left: 20px;
+        padding: 15px 20px;
+      }
+      #info {
+        top: 10px;
+        left: 10px;
+        padding: 12px 18px;
+      }
+      .router-badge {
+        top: 10px;
+        right: 10px;
+        padding: 8px 18px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <h1>ASK <span>·</span> FSK <span>·</span> PSK</h1>
+    <p>Amplitude · Frequency · Phase Shift Keying</p>
+  </div>
+  <div class="router-badge">
+    <span style="font-size:1.4rem;">📶</span> ARBITRARY WiFi ROUTER <span style="font-weight:300; margin-left:6px;">▲</span>
+  </div>
+  <div class="legend-panel" id="legendPanel">
+    <div class="legend-item" data-mod="ask">
+      <div class="color-box" style="background: #ffaa00; box-shadow: 0 0 25px #ffaa00;"></div>
+      <div class="legend-text">ASK <small>Amplitude Shift</small></div>
+    </div>
+    <div class="legend-item" data-mod="fsk">
+      <div class="color-box" style="background: #3acfcf; box-shadow: 0 0 25px #3acfcf;"></div>
+      <div class="legend-text">FSK <small>Frequency Shift</small></div>
+    </div>
+    <div class="legend-item" data-mod="psk">
+      <div class="color-box" style="background: #d96ef0; box-shadow: 0 0 25px #d96ef0;"></div>
+      <div class="legend-text">PSK <small>Phase Shift</small></div>
+    </div>
+  </div>
+
+  <!-- Thought Terminal -->
+  <div class="thought-terminal" id="thoughtTerminal">
+    <div class="terminal-header">
+      <span>🧠 WiFi Router Thought Processor</span>
+      <span style="opacity:0.7;">v2.4</span>
+    </div>
+    <div class="terminal-output" id="terminalOutput">
+      <span>Ready to analyze modulation.</span><span class="cursor" id="cursorSpan"></span>
+    </div>
+    <div class="terminal-actions">
+      <button class="terminal-btn" id="btnAnalyzeAll">▶ Analyze All</button>
+      <button class="terminal-btn" id="btnClear">⌧ Clear</button>
+    </div>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <!-- TypeScript-like logic compiled to JavaScript (embedded) -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    // ---------- 3D SCENE SETUP (same as original) ----------
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0f1a);
+    scene.fog = new THREE.Fog(0x0a0f1a, 8, 28);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 60);
+    camera.position.set(7, 5.5, 10);
+    camera.lookAt(0, 0.2, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.left = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    document.body.appendChild(labelRenderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.8;
+    controls.target.set(0, 0.3, 0);
+    controls.update();
+    controls.maxPolarAngle = Math.PI / 1.9;
+    controls.minDistance = 4;
+    controls.maxDistance = 22;
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0x1c2c4a));
+    const dirLight = new THREE.DirectionalLight(0xd0e6ff, 0.8);
+    dirLight.position.set(5, 10, 7);
+    dirLight.castShadow = true;
+    dirLight.receiveShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.camera.near = 1;
+    dirLight.shadow.camera.far = 35;
+    scene.add(dirLight);
+    scene.add(new THREE.PointLight(0x2a4a7a, 0.6, 18).position.set(-3, 1, -3));
+
+    // Ground and platform
+    const gridHelper = new THREE.GridHelper(8, 30, 0x1a3355, 0x0e1a2b);
+    gridHelper.position.y = -0.8;
+    scene.add(gridHelper);
+    const platform = new THREE.Mesh(
+      new THREE.CylinderGeometry(3.2, 3.3, 0.2, 64),
+      new THREE.MeshStandardMaterial({ color: 0x132237, roughness: 0.65, metalness: 0.7 })
+    );
+    platform.position.set(0, -0.9, 0);
+    platform.receiveShadow = true;
+    platform.castShadow = true;
+    scene.add(platform);
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(3.05, 0.06, 32, 80),
+      new THREE.MeshStandardMaterial({ color: 0x2f5a8c, roughness: 0.4, metalness: 0.8 })
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = -0.78;
+    ring.receiveShadow = true;
+    scene.add(ring);
+
+    // Central hub
+    const hubGroup = new THREE.Group();
+    hubGroup.position.set(0, -0.2, 0);
+    hubGroup.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.65, 1), new THREE.MeshStandardMaterial({ color: 0x1e3b5a, roughness: 0.25, metalness: 0.85 })));
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const spike = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.14, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0x4d7bb0, roughness: 0.3, metalness: 0.9 }));
+      spike.position.set(Math.sin(angle) * 0.7, 0.2, Math.cos(angle) * 0.7);
+      spike.rotation.z = (Math.PI / 2) * 0.8;
+      spike.rotation.x = angle;
+      spike.castShadow = true;
+      spike.receiveShadow = true;
+      hubGroup.add(spike);
+    }
+    scene.add(hubGroup);
+
+    // Modulation curves data
+    const bits = [1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1];
+    const bitDuration = 1.0;
+    const totalTime = bits.length * bitDuration;
+    const samplesPerBit = 42;
+    const totalSamples = bits.length * samplesPerBit;
+    const carrierFreqBase = 1.8, carrierFreqHigh = 2.9;
+    const ampHigh = 1.5, ampLow = 0.4;
+    const phaseShift = Math.PI;
+
+    const times = Array.from({ length: totalSamples + 1 }, (_, i) => (i / samplesPerBit) * bitDuration);
+    const askPoints = [], fskPoints = [], pskPoints = [];
+    times.forEach(t => {
+      const bitIndex = Math.min(Math.floor(t / bitDuration), bits.length - 1);
+      const bit = bits[bitIndex];
+      askPoints.push(new THREE.Vector3(t - totalTime/2, (bit ? ampHigh : ampLow) * Math.sin(2 * Math.PI * carrierFreqBase * t), 1.9));
+      fskPoints.push(new THREE.Vector3(t - totalTime/2, 1.35 * Math.sin(2 * Math.PI * (bit ? carrierFreqHigh : carrierFreqBase) * t), 0.0));
+      pskPoints.push(new THREE.Vector3(t - totalTime/2, 1.35 * Math.sin(2 * Math.PI * carrierFreqBase * t + (bit ? 0 : phaseShift)), -1.9));
+    });
+
+    function createCurve(points, color) {
+      const curve = new THREE.CatmullRomCurve3(points);
+      const curvePoints = curve.getPoints(points.length * 2);
+      const geo = new THREE.BufferGeometry().setFromPoints(curvePoints);
+      const group = new THREE.Group();
+      group.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color })));
+      group.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.25 })));
+      return group;
+    }
+    scene.add(createCurve(askPoints, 0xffaa00));
+    scene.add(createCurve(fskPoints, 0x3acfcf));
+    scene.add(createCurve(pskPoints, 0xd96ef0));
+
+    // Bit markers
+    const markerGroup = new THREE.Group();
+    bits.forEach((bit, i) => {
+      const xPos = (i * bitDuration) - totalTime/2 + bitDuration/2;
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 2.4), new THREE.MeshBasicMaterial({ color: bit ? 0x4a7db0 : 0x2a3f5a, transparent: true, opacity: 0.15, side: THREE.DoubleSide }));
+      plane.position.set(xPos, 0, 0);
+      markerGroup.add(plane);
+      const div = document.createElement('div');
+      div.textContent = bit;
+      div.style.color = bit ? '#c3e2ff' : '#6f8aa8';
+      div.style.fontWeight = 'bold';
+      div.style.fontSize = '16px';
+      div.style.background = 'rgba(8,16,28,0.8)';
+      div.style.borderRadius = '20px';
+      div.style.padding = '2px 10px';
+      const label = new CSS2DObject(div);
+      label.position.set(xPos, -0.55, 0);
+      markerGroup.add(label);
+    });
+    scene.add(markerGroup);
+
+    // Labels
+    function createLabel(text, color, pos) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      div.style.cssText = `color:#fff;font-weight:600;font-size:18px;background:rgba(10,18,30,0.85);border-left:4px solid ${color};padding:6px 18px;border-radius:8px;backdrop-filter:blur(8px);`;
+      const lbl = new CSS2DObject(div);
+      lbl.position.copy(pos);
+      return lbl;
+    }
+    scene.add(createLabel('ASK', '#ffaa00', new THREE.Vector3(-4.9, 1.9, 1.9)));
+    scene.add(createLabel('FSK', '#3acfcf', new THREE.Vector3(-4.9, 1.9, 0.0)));
+    scene.add(createLabel('PSK', '#d96ef0', new THREE.Vector3(-4.9, 1.9, -1.9)));
+
+    // Particles
+    const particlesGeo = new THREE.BufferGeometry();
+    const particlesPos = new Float32Array(350 * 3);
+    for (let i = 0; i < 350 * 3; i += 3) {
+      particlesPos[i] = (Math.random() - 0.5) * 9;
+      particlesPos[i+1] = Math.random() * 4.5 - 0.2;
+      particlesPos[i+2] = (Math.random() - 0.5) * 7;
+    }
+    particlesGeo.setAttribute('position', new THREE.BufferAttribute(particlesPos, 3));
+    const particles = new THREE.Points(particlesGeo, new THREE.PointsMaterial({ color: 0x3a6ea5, size: 0.045, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.7 }));
+    scene.add(particles);
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      particles.rotation.y += 0.0002;
+      ring.rotation.z += 0.001;
+      hubGroup.rotation.y += 0.003;
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ---------- TYPE SCRIPT DYNAMIC TYPING & THOUGHT PRINTING ----------
+    // Using a class structure typical of TypeScript, but compiled to plain JS for browser.
+    class ThoughtProcessor {
+      constructor(outputElement, cursorElement) {
+        this.outputEl = outputElement;
+        this.cursorEl = cursorElement;
+        this.typingTimer = null;
+        this.currentPromise = null;
+      }
+
+      /**
+       * Types text character by character with a blinking cursor.
+       * @param {string} fullText - The complete message to display.
+       * @param {number} speed - Milliseconds per character.
+       */
+      async typeText(fullText, speed = 45) {
+        this.clearTyping();
+        this.outputEl.innerHTML = ''; // Clear previous text
+        this.cursorEl.style.display = 'inline-block';
+        let i = 0;
+        return new Promise((resolve) => {
+          const typeNext = () => {
+            if (i < fullText.length) {
+              this.outputEl.innerHTML += fullText.charAt(i);
+              i++;
+              this.typingTimer = setTimeout(typeNext, speed);
+            } else {
+              this.cursorEl.style.display = 'none';
+              resolve();
+            }
+          };
+          typeNext();
+        });
+      }
+
+      /**
+       * Prints a single line instantly (no typing animation), appending.
+       * @param {string} text
+       */
+      printLine(text) {
+        this.clearTyping();
+        this.outputEl.innerHTML += text + '<br>';
+      }
+
+      /**
+       * Clears any ongoing typing animation.
+       */
+      clearTyping() {
+        if (this.typingTimer) {
+          clearTimeout(this.typingTimer);
+          this.typingTimer = null;
+        }
+      }
+
+      /**
+       * Clears the terminal output.
+       */
+      clear() {
+        this.clearTyping();
+        this.outputEl.innerHTML = '';
+        this.cursorEl.style.display = 'inline-block';
+      }
+
+      /**
+       * Analyzes a specific modulation type with a thoughtful message.
+       * @param {'ask'|'fsk'|'psk'} modType
+       */
+      async analyzeModulation(modType) {
+        const messages = {
+          ask: `📡 ASK (Amplitude Shift Keying): 
+      • Digital data varies the CARRIER AMPLITUDE.
+      • Bit 1 → high amplitude (${ampHigh}), Bit 0 → low amplitude (${ampLow}).
+      • Simple but susceptible to noise.
+      • Used in early optical & RFID systems.`,
+
+          fsk: `📶 FSK (Frequency Shift Keying):
+      • Information is encoded in FREQUENCY changes.
+      • Bit 1 → high frequency (${carrierFreqHigh} Hz), Bit 0 → low (${carrierFreqBase} Hz).
+      • More robust against amplitude noise.
+      • Common in Bluetooth, Wi-Fi (GFSK).`,
+
+          psk: `🔄 PSK (Phase Shift Keying):
+      • Data alters the CARRIER PHASE.
+      • Bit 1 → 0° phase, Bit 0 → 180° phase shift (π).
+      • Highly efficient, used in Wi-Fi (QPSK/BPSK).
+      • Constellation diagrams central to PSK.`
+        };
+        await this.typeText(messages[modType] || 'Unknown modulation.', 35);
+      }
+
+      /**
+       * Runs a sequence analyzing all three modulations with pauses.
+       */
+      async analyzeAll() {
+        this.clear();
+        await this.typeText('🔍 Initiating full modulation analysis...', 50);
+        await new Promise(r => setTimeout(r, 400));
+        await this.analyzeModulation('ask');
+        await new Promise(r => setTimeout(r, 800));
+        this.printLine(''); // spacing
+        await this.analyzeModulation('fsk');
+        await new Promise(r => setTimeout(r, 800));
+        this.printLine('');
+        await this.analyzeModulation('psk');
+        await this.typeText('✅ Analysis complete. Router intelligence active.', 45);
+      }
+    }
+
+    // Initialize the thought processor
+    const terminalOutput = document.getElementById('terminalOutput');
+    const cursorSpan = document.getElementById('cursorSpan');
+    const processor = new ThoughtProcessor(terminalOutput, cursorSpan);
+
+    // Connect UI buttons
+    document.getElementById('btnAnalyzeAll').addEventListener('click', () => {
+      processor.analyzeAll();
+    });
+    document.getElementById('btnClear').addEventListener('click', () => {
+      processor.clear();
+      processor.typeText('Terminal cleared. Ready.', 30);
+    });
+
+    // Legend click interaction: analyze specific modulation
+    document.querySelectorAll('.legend-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const mod = item.dataset.mod;
+        if (mod) {
+          processor.clear();
+          processor.analyzeModulation(mod);
+        }
+      });
+    });
+
+    // Initial welcome message
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        processor.typeText('✨ Click legend items or "Analyze All" to explore ASK/FSK/PSK.', 40);
+      }, 600);
+    });
+
+    console.log('📡 ASK · FSK · PSK 3D WiFi Router Visualization with Thought Terminal active.');
+  </script>
+</body>
+</html>

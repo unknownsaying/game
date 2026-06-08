@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QAM Constellation Visualizer | 16 to 4096-QAM</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0f1e 0%, #1a1f2e 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #e0e0e0;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background: rgba(20, 25, 40, 0.9);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #64b5f6, #42a5f5, #ab47bc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #90a4ae;
+      margin-bottom: 35px;
+      font-size: 0.95rem;
+      letter-spacing: 0.3px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 35px;
+    }
+
+    .qam-btn {
+      padding: 12px 24px;
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: #b0bec5;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
+    }
+
+    .qam-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .qam-btn.active {
+      background: linear-gradient(135deg, #42a5f5, #7c4dff);
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 8px 25px rgba(66, 165, 245, 0.4);
+    }
+
+    .visualization-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .visualization-area {
+        grid-template-columns: 1fr;
+      }
+      .container {
+        padding: 20px;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+
+    .canvas-wrapper {
+      background: rgba(10, 15, 25, 0.7);
+      border-radius: 20px;
+      padding: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .canvas-wrapper h3 {
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #90a4ae;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 12px;
+      background: #0a0f18;
+      width: 100%;
+      height: auto;
+    }
+
+    .info-panel {
+      background: rgba(10, 15, 25, 0.7);
+      border-radius: 20px;
+      padding: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .info-panel h3 {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #64b5f6;
+      font-weight: 600;
+    }
+
+    .specs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .spec-item {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .spec-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #78909c;
+      margin-bottom: 4px;
+    }
+
+    .spec-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #e0e0e0;
+    }
+
+    .spec-unit {
+      font-size: 0.7rem;
+      color: #78909c;
+      font-weight: 400;
+    }
+
+    .description {
+      margin-top: 20px;
+      line-height: 1.7;
+      color: #b0bec5;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 18px;
+      border-radius: 14px;
+      border-left: 3px solid #42a5f5;
+    }
+
+    .ber-note {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #ff8a65;
+      background: rgba(255, 138, 101, 0.08);
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 15px;
+      font-size: 0.75rem;
+      color: #90a4ae;
+    }
+
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #42a5f5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Quadrature Amplitude Modulation</h1>
+    <p class="subtitle">Interactive Constellation Diagram — 16-QAM to 4096-QAM</p>
+
+    <div class="controls">
+      <button class="qam-btn active" data-qam="16">16-QAM</button>
+      <button class="qam-btn" data-qam="64">64-QAM</button>
+      <button class="qam-btn" data-qam="256">256-QAM</button>
+      <button class="qam-btn" data-qam="1024">1024-QAM</button>
+      <button class="qam-btn" data-qam="4096">4096-QAM</button>
+    </div>
+
+    <div class="visualization-area">
+      <div class="canvas-wrapper">
+        <h3>Constellation Diagram</h3>
+        <canvas id="constellationCanvas" width="420" height="420"></canvas>
+        <div class="legend">
+          <span><span class="legend-dot"></span> Symbol Point</span>
+          <span style="color:#546e7a;">┼ Decision Boundary</span>
+        </div>
+      </div>
+
+      <div class="info-panel" id="infoPanel">
+        <h3 id="qamTitle">16-QAM Specifications</h3>
+        <div class="specs">
+          <div class="spec-item">
+            <div class="spec-label">Symbols</div>
+            <div class="spec-value" id="specSymbols">16</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-label">Bits per Symbol</div>
+            <div class="spec-value" id="specBits">4</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-label">I/Q Levels</div>
+            <div class="spec-value" id="specLevels">4</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-label">Spectral Efficiency</div>
+            <div class="spec-value" id="specEfficiency">4 <span class="spec-unit">bps/Hz</span></div>
+          </div>
+        </div>
+        <div class="description" id="description">
+          16-QAM encodes 4 bits per symbol using 4 amplitude levels on both I (in-phase) and Q (quadrature) axes, yielding 16 distinct constellation points. It is widely used in 802.11n/ac Wi-Fi, DVB-T, and LTE for moderate SNR conditions.
+        </div>
+        <div class="ber-note" id="berNote">
+          ⚡ Higher-order QAM requires greater SNR. 4096-QAM needs ~33 dB SNR for acceptable BER, while 16-QAM works reliably at ~15 dB.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ---- Configuration for each QAM order ----
+      const qamConfig = {
+        16: {
+          name: '16-QAM',
+          M: 16,
+          bitsPerSymbol: 4,
+          levelsPerAxis: 4,
+          description: '16-QAM encodes 4 bits per symbol using 4 amplitude levels on both I (in-phase) and Q (quadrature) axes, yielding 16 distinct constellation points. It is widely used in 802.11n/ac Wi-Fi, DVB-T, and LTE for moderate SNR conditions.',
+          snrNote: '⚡ 16-QAM requires ~15 dB SNR for reliable communication (BER < 10⁻⁶).',
+          pointColor: '#42a5f5',
+          pointRadius: 5
+        },
+        64: {
+          name: '64-QAM',
+          M: 64,
+          bitsPerSymbol: 6,
+          levelsPerAxis: 8,
+          description: '64-QAM packs 6 bits per symbol with 8 levels per axis. It is the standard for 802.11ac Wi-Fi (MCS 7) and DOCSIS 3.0 cable modems, offering a good balance between data rate and robustness.',
+          snrNote: '⚡ 64-QAM typically needs ~22 dB SNR. Used in cable TV and high-speed Wi-Fi.',
+          pointColor: '#ab47bc',
+          pointRadius: 3.5
+        },
+        256: {
+          name: '256-QAM',
+          M: 256,
+          bitsPerSymbol: 8,
+          levelsPerAxis: 16,
+          description: '256-QAM transmits 8 bits per symbol (16 levels/axis). It is employed in 802.11ac Wave 2, DVB-C2, and 5G NR for high-throughput scenarios with excellent signal quality.',
+          snrNote: '⚡ 256-QAM demands ~27 dB SNR. Common in fiber-coax networks and premium Wi-Fi.',
+          pointColor: '#ff7043',
+          pointRadius: 2.8
+        },
+        1024: {
+          name: '1024-QAM',
+          M: 1024,
+          bitsPerSymbol: 10,
+          levelsPerAxis: 32,
+          description: '1024-QAM encodes 10 bits per symbol. It appears in 802.11ax (Wi-Fi 6) and 5G mmWave, requiring very high SNR and precise hardware calibration to distinguish 32 levels per axis.',
+          snrNote: '⚡ 1024-QAM requires ~30 dB SNR. Only feasible in near-ideal channel conditions.',
+          pointColor: '#66bb6a',
+          pointRadius: 2.0
+        },
+        4096: {
+          name: '4096-QAM',
+          M: 4096,
+          bitsPerSymbol: 12,
+          levelsPerAxis: 64,
+          description: '4096-QAM is an ultra-dense constellation carrying 12 bits per symbol. It is experimental in Wi-Fi 7 (802.11be) and high-capacity microwave backhaul, needing ~33+ dB SNR and advanced error correction.',
+          snrNote: '⚡ 4096-QAM pushes the Shannon limit. Requires ~33–35 dB SNR and extremely linear amplifiers.',
+          pointColor: '#ef5350',
+          pointRadius: 1.3
+        }
+      };
+
+      // ---- State ----
+      let currentQAM = 16;
+      const canvas = document.getElementById('constellationCanvas');
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const margin = 55;
+      const plotWidth = width - 2 * margin;
+      const plotHeight = height - 2 * margin;
+
+      // ---- DOM Elements ----
+      const buttons = document.querySelectorAll('.qam-btn');
+      const qamTitle = document.getElementById('qamTitle');
+      const specSymbols = document.getElementById('specSymbols');
+      const specBits = document.getElementById('specBits');
+      const specLevels = document.getElementById('specLevels');
+      const specEfficiency = document.getElementById('specEfficiency');
+      const descriptionEl = document.getElementById('description');
+      const berNoteEl = document.getElementById('berNote');
+
+      // ---- Utility: Map symbol index to I/Q coordinates (Gray-coded approximate) ----
+      function getIQPoints(M) {
+        const levelsPerAxis = Math.sqrt(M);
+        const points = [];
+        // Normalized spacing: levels from -(L-1) to +(L-1), scaled to fit [-1, 1]
+        const maxVal = levelsPerAxis - 1;
+        
+        for (let i = 0; i < levelsPerAxis; i++) {
+          for (let q = 0; q < levelsPerAxis; q++) {
+            // Map to symmetric range
+            const iVal = (2 * i - maxVal) / maxVal;
+            const qVal = (2 * q - maxVal) / maxVal;
+            points.push({ i: iVal, q: qVal });
+          }
+        }
+        return points;
+      }
+
+      // ---- Draw grid, axes, labels ----
+      function drawGrid() {
+        ctx.clearRect(0, 0, width, height);
+        
+        // Background grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.lineWidth = 0.8;
+        const gridSteps = 10;
+        for (let i = 0; i <= gridSteps; i++) {
+          const x = margin + (i / gridSteps) * plotWidth;
+          const y = margin + (i / gridSteps) * plotHeight;
+          ctx.beginPath();
+          ctx.moveTo(x, margin);
+          ctx.lineTo(x, margin + plotHeight);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(margin, y);
+          ctx.lineTo(margin + plotWidth, y);
+          ctx.stroke();
+        }
+
+        // Main axes
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = 1.5;
+        // Vertical axis
+        ctx.beginPath();
+        ctx.moveTo(width / 2, margin);
+        ctx.lineTo(width / 2, margin + plotHeight);
+        ctx.stroke();
+        // Horizontal axis
+        ctx.beginPath();
+        ctx.moveTo(margin, height / 2);
+        ctx.lineTo(margin + plotWidth, height / 2);
+        ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#78909c';
+        ctx.font = '11px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('I (In-Phase)', width / 2, height - 8);
+        ctx.save();
+        ctx.translate(12, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Q (Quadrature)', 0, 0);
+        ctx.restore();
+
+        // Axis ticks
+        ctx.fillStyle = '#546e7a';
+        ctx.font = '9px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('-1', margin - 5, height / 2 + 14);
+        ctx.fillText('+1', margin + plotWidth + 5, height / 2 + 14);
+        ctx.fillText('-1', width / 2, margin + plotHeight + 14);
+        ctx.fillText('+1', width / 2, margin - 6);
+      }
+
+      // ---- Plot constellation points ----
+      function plotConstellation(M, pointColor, pointRadius) {
+        const points = getIQPoints(M);
+        
+        // Draw faint decision boundary lines for lower-order QAM
+        if (M <= 256) {
+          const levelsPerAxis = Math.sqrt(M);
+          const maxVal = levelsPerAxis - 1;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+          ctx.lineWidth = 0.5;
+          ctx.setLineDash([3, 6]);
+          
+          for (let k = 0; k < levelsPerAxis - 1; k++) {
+            const boundaryI = (2 * (k + 0.5) - maxVal) / maxVal;
+            const boundaryQ = (2 * (k + 0.5) - maxVal) / maxVal;
+            
+            // Vertical boundaries
+            const x = margin + ((boundaryI + 1) / 2) * plotWidth;
+            ctx.beginPath();
+            ctx.moveTo(x, margin);
+            ctx.lineTo(x, margin + plotHeight);
+            ctx.stroke();
+            
+            // Horizontal boundaries
+            const y = margin + ((1 - boundaryQ) / 2) * plotHeight;
+            ctx.beginPath();
+            ctx.moveTo(margin, y);
+            ctx.lineTo(margin + plotWidth, y);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+        }
+
+        // Draw points
+        points.forEach(p => {
+          const x = margin + ((p.i + 1) / 2) * plotWidth;
+          const y = margin + ((1 - p.q) / 2) * plotHeight;
+          
+          // Glow effect
+          ctx.beginPath();
+          ctx.arc(x, y, pointRadius * 1.8, 0, 2 * Math.PI);
+          ctx.fillStyle = pointColor.replace(')', ', 0.15)').replace('rgb', 'rgba');
+          if (pointColor.startsWith('#')) {
+            // Convert hex to rgba for glow
+            const hex = pointColor;
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.15)`;
+          }
+          ctx.fill();
+          
+          // Core point
+          ctx.beginPath();
+          ctx.arc(x, y, pointRadius, 0, 2 * Math.PI);
+          ctx.fillStyle = pointColor;
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        });
+      }
+
+      // ---- Update UI info panel ----
+      function updateInfo(config) {
+        qamTitle.textContent = config.name + ' Specifications';
+        specSymbols.textContent = config.M.toLocaleString();
+        specBits.textContent = config.bitsPerSymbol;
+        specLevels.textContent = config.levelsPerAxis;
+        specEfficiency.innerHTML = `${config.bitsPerSymbol} <span class="spec-unit">bps/Hz</span>`;
+        descriptionEl.textContent = config.description;
+        berNoteEl.innerHTML = config.snrNote;
+      }
+
+      // ---- Main render ----
+      function render(qamOrder) {
+        const config = qamConfig[qamOrder];
+        drawGrid();
+        plotConstellation(config.M, config.pointColor, config.pointRadius);
+        updateInfo(config);
+        
+        // Update buttons
+        buttons.forEach(btn => {
+          const btnQAM = parseInt(btn.getAttribute('data-qam'));
+          if (btnQAM === qamOrder) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      // ---- Event Listeners ----
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const qamOrder = parseInt(btn.getAttribute('data-qam'));
+          if (qamOrder !== currentQAM) {
+            currentQAM = qamOrder;
+            render(currentQAM);
+          }
+        });
+      });
+
+      // ---- Keyboard navigation ----
+      document.addEventListener('keydown', (e) => {
+        const qamOrders = [16, 64, 256, 1024, 4096];
+        const currentIndex = qamOrders.indexOf(currentQAM);
+        
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          const nextIndex = (currentIndex + 1) % qamOrders.length;
+          currentQAM = qamOrders[nextIndex];
+          render(currentQAM);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prevIndex = (currentIndex - 1 + qamOrders.length) % qamOrders.length;
+          currentQAM = qamOrders[prevIndex];
+          render(currentQAM);
+        }
+      });
+
+      // ---- Initial render ----
+      render(16);
+    })();
+  </script>
+</body>
+</html>

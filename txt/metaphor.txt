@@ -1,0 +1,35 @@
+[Declaration] → Dim, Const, Enum, Class, Structure, Module, Interface, Delegate
+                → As (type), New, Inherits, Implements
+
+[Block Statement] → If..Then..Else..End If
+                    Select..Case..End Select
+                    For..To/Each..In..Next
+                    Do..While/Until..Loop
+                    While..End While
+                    Try..Catch..Finally..End Try
+                    Using..End Using
+                    SyncLock..End SyncLock
+                    With..End With
+
+[Modifiers] → Public, Private, …, Shared, Shadows, Overrides, Overloads
+              MustInherit, NotInheritable, Overridable, NotOverridable, MustOverride
+              ReadOnly, WriteOnly, Default, WithEvents, Static, Partial
+
+[Control Transfer] → Exit (For, Do, While, Sub, …), Continue (For, Do, While),
+                     GoTo, Return, Stop, End
+
+[Exception] → Throw, Try..Catch(When)..Finally
+
+[Resource] → Using..End Using, SyncLock..End SyncLock
+
+[Operators] → Is, IsNot, Like, Mod, AndAlso, OrElse, And, Or, Xor, Not,
+               AddressOf, GetType, TypeOf..Is, DirectCast, TryCast, CType, GetXmlNamespace
+
+[Async/Await] → Async (Sub/Function), Await (expression)
+[Iterator] → Iterator (Function), Yield (value)
+
+[LINQ] → From..In..Where..Order By..Select..Distinct..Group..Join..Aggregate..Let..Skip..Take..
+[XML] → GetXmlNamespace, XML literals, axis properties
+
+[Conversions] → CBool, CByte, …, CType, DirectCast, TryCast
+[Arrays] → Erase, ReDim [Preserve]
