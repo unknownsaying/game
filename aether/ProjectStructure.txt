@@ -1,0 +1,54 @@
+aether_engine/
+├── core/
+│   ├── __init__.py
+│   ├── engine.py
+│   ├── game_loop.py
+│   ├── scene_manager.py
+│   ├── event_system.py
+│   └── resource_manager.py
+├── graphics/
+│   ├── __init__.py
+│   ├── renderer.py
+│   ├── camera.py
+│   ├── sprite.py
+│   ├── animation.py
+│   ├── particle_system.py
+│   ├── lighting.py
+│   └── post_processing.py
+├── physics/
+│   ├── __init__.py
+│   ├── physics_world.py
+│   ├── rigidbody.py
+│   ├── colliders.py
+│   └── forces.py
+├── entities/
+│   ├── __init__.py
+│   ├── entity.py
+│   ├── components.py
+│   └── prefabs.py
+├── ai/
+│   ├── __init__.py
+|   |── AI.py
+│   ├── behavior_tree.py
+│   ├── pathfinding.py
+│   ├── state_machine.py
+│   ├── neural_network.py
+│   ├── reinforcement_learning.py
+│   ├── nlp_dialogue.py
+│   └── procedural_generation.py
+|   |── system.py
+├── audio/
+│   ├── __init__.py
+│   ├── audio_manager.py
+│   └── sound_effects.py
+├── ui/
+│   ├── __init__.py
+│   ├── ui_system.py
+│   └── widgets.py
+├── utils/
+│   ├── __init__.py
+│   ├── math_utils.py
+│   ├── profiling.py
+│   └── serialization.py
+└── examples/
+    └── demo_game.py
