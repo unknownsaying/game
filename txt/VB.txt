@@ -2,7 +2,7 @@ Declaration and type keywords
 Dim Const Enum Class Structure Interface Module Delegate Event Sub Function Property Operator Declare Namespace
 
 Access modifiers
-Public Private Protected Friend Protected Friend Private Protected
+Public Private Protected Friend 
 
 Inheritance / modification
 Inherits Implements MustInherit NotInheritable MustOverride Overridable NotOverridable Overrides Overloads Shadows Shared
